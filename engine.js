@@ -12,7 +12,7 @@ var __assign = (this && this.__assign) || function () {
 define(["require", "exports", "./extensions/context"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.GameEvent = exports.GameObject = exports.$engine = exports.XY = void 0;
+    exports.GameEvent = exports.GameObject = exports.Engine = exports.XY = void 0;
     var XY = /** @class */ (function () {
         function XY(x, y) {
             var _this = this;
@@ -31,7 +31,7 @@ define(["require", "exports", "./extensions/context"], function (require, export
     }());
     exports.XY = XY;
     var Engine = /** @class */ (function () {
-        function Engine() {
+        function Engine(width, height) {
             var _this = this;
             this.getContext = function () { return _this.context; };
             this.getScreenSize = function () { return new XY(_this.canvas.width, _this.canvas.height); };
@@ -93,11 +93,13 @@ define(["require", "exports", "./extensions/context"], function (require, export
                     gameObject.draw();
                 });
             };
+            if (globalThis.$engine)
+                throw new Error("The game engine is already running!");
             this.canvas = document.getElementById("app");
             this.context = this.canvas.getContext("2d");
             this.mouse = new XY(0, 0);
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
+            this.canvas.width = width || window.innerWidth;
+            this.canvas.height = height || window.innerHeight;
             this.gameObjects = [];
             this.events = [];
             addEventListener("mousemove", function (e) {
@@ -105,12 +107,15 @@ define(["require", "exports", "./extensions/context"], function (require, export
                 _this.mouse.y = e.clientY;
             });
             this.animate();
+            globalThis.$engine = this;
         }
         return Engine;
     }());
-    exports.$engine = new Engine();
+    exports.Engine = Engine;
     var GameObject = /** @class */ (function () {
         function GameObject(id, data, scripts) {
+            if (!globalThis.$engine)
+                throw new Error("The engine is not running!");
             var _a = data || {}, position = _a.position, velocity = _a.velocity;
             this.id = id;
             this.position = position ? __assign({}, position) : new XY();
@@ -120,7 +125,7 @@ define(["require", "exports", "./extensions/context"], function (require, export
         GameObject.prototype.draw = function () {
             this.position.x += this.velocity.x;
             this.position.y += this.velocity.y;
-            this.scripts(exports.$engine.getContext(), this);
+            this.scripts(globalThis.$engine.getContext(), this);
         };
         return GameObject;
     }());

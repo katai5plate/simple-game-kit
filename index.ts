@@ -1,24 +1,26 @@
-import { $engine, XY, GameObject, GameEvent } from "./engine";
+import { Engine, XY, GameObject, GameEvent } from "./engine";
+
+const engine = new Engine();
 
 const player = new GameObject(
   "player",
-  { position: new XY($engine.getCenterX(), $engine.getCenterY()) },
+  { position: new XY(engine.getCenterX(), engine.getCenterY()) },
   (c, { position: { x, y } }) => {
     c.colorCode("blue");
     c.fillCircle(x, y, 30);
   }
 );
 
-$engine.addObjects([player]);
+engine.addObjects([player]);
 
-$engine.addEvents([
+engine.addEvents([
   new GameEvent("shot", "click", (e: MouseEvent) => {
-    $engine.addObjects([
+    engine.addObjects([
       new GameObject(
         "projectile" + Math.random(),
         {
           position: player.position,
-          velocity: XY.parse(player.position).to($engine.getMousePosition()),
+          velocity: XY.parse(player.position).to(engine.getMousePosition()),
         },
         (c, { position: { x, y } }) => {
           c.colorCode("red");
@@ -28,5 +30,3 @@ $engine.addEvents([
     ]);
   }),
 ]);
-
-globalThis.e = $engine;

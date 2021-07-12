@@ -17,18 +17,20 @@ export class XY {
 type Identifier = string | number;
 type WindowEventMapTrigger = keyof WindowEventMap;
 
-class Engine {
+export class Engine {
   private canvas: HTMLCanvasElement;
   public context: CanvasRenderingContext2D;
   private mouse: XY;
   private gameObjects: GameObject[];
   private events: GameEvent[];
-  constructor() {
+  constructor(width?: number, height?: number) {
+    if (globalThis.$engine)
+      throw new Error("The game engine is already running!");
     this.canvas = document.getElementById("app") as HTMLCanvasElement;
     this.context = this.canvas.getContext("2d");
     this.mouse = new XY(0, 0);
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    this.canvas.width = width || window.innerWidth;
+    this.canvas.height = height || window.innerHeight;
     this.gameObjects = [];
     this.events = [];
     addEventListener("mousemove", (e) => {
@@ -36,6 +38,7 @@ class Engine {
       this.mouse.y = e.clientY;
     });
     this.animate();
+    globalThis.$engine = this;
   }
   getContext = () => this.context;
   getScreenSize = () => new XY(this.canvas.width, this.canvas.height);
@@ -99,8 +102,6 @@ class Engine {
   };
 }
 
-export const $engine = new Engine();
-
 type GameObjectScripts = (
   ctx: CanvasRenderingContext2D,
   self: GameObject
@@ -116,6 +117,7 @@ export class GameObject {
     data?: { position?: XY; velocity?: XY },
     scripts?: GameObjectScripts
   ) {
+    if (!globalThis.$engine) throw new Error("The engine is not running!");
     const { position, velocity } = data || {};
     this.id = id;
     this.position = position ? { ...position } : new XY();
@@ -125,7 +127,7 @@ export class GameObject {
   draw() {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
-    this.scripts($engine.getContext(), this);
+    this.scripts(globalThis.$engine.getContext(), this);
   }
 }
 
