@@ -70,7 +70,17 @@ define(["require", "exports", "./extensions/context"], function (require, export
             this.getMousePosition = function () { return new XY(_this.mouse.x, _this.mouse.y); };
             this.getMouseX = function () { return _this.mouse.x; };
             this.getMouseY = function () { return _this.mouse.y; };
+            this.setFps = function () {
+                var now = performance.now();
+                var delta = (now - _this.lastNow) / 1000;
+                _this.lastNow = now;
+                _this.fps = 1 / delta;
+                _this.frameCount += now / 1000;
+            };
+            this.getFps = function () { return _this.fps; };
+            this.getFrameCount = function () { return _this.frameCount; };
             this.animate = function () {
+                _this.setFps();
                 requestAnimationFrame(_this.animate);
                 if (_this.active) {
                     _this.context.clearRect(0, 0, _this.getScreenWidth(), _this.getScreenHeight());
@@ -88,6 +98,9 @@ define(["require", "exports", "./extensions/context"], function (require, export
             this.canvas.height = height || window.innerHeight;
             this.gameObjects = [];
             this.events = [];
+            this.frameCount = 0;
+            this.fps = 0;
+            this.lastNow = performance.now();
             addEventListener("mousemove", function (e) {
                 _this.mouse.x = e.clientX;
                 _this.mouse.y = e.clientY;

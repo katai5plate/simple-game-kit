@@ -53,6 +53,9 @@ export class Engine {
   private gameObjects: GameObject[];
   private events: GameEvent[];
   private active: boolean;
+  private frameCount: number;
+  private fps: number;
+  private lastNow: number;
   constructor(width?: number, height?: number) {
     if (globalThis.$engine)
       throw new Error("The game engine is already running!");
@@ -63,6 +66,9 @@ export class Engine {
     this.canvas.height = height || window.innerHeight;
     this.gameObjects = [];
     this.events = [];
+    this.frameCount = 0;
+    this.fps = 0;
+    this.lastNow = performance.now();
     addEventListener("mousemove", (e) => {
       this.mouse.x = e.clientX;
       this.mouse.y = e.clientY;
@@ -129,7 +135,17 @@ export class Engine {
       }
     });
   }
+  setFps = () => {
+    const now = performance.now();
+    const delta = (now - this.lastNow) / 1000;
+    this.lastNow = now;
+    this.fps = 1 / delta;
+    this.frameCount += now / 1000;
+  };
+  getFps = () => this.fps;
+  getFrameCount = () => this.frameCount;
   animate = () => {
+    this.setFps();
     requestAnimationFrame(this.animate);
     if (this.active) {
       this.context.clearRect(

@@ -19,7 +19,7 @@ define(["require", "exports", "./engine"], function (require, exports, engine_1)
     var now = memory({ total: 0, used: 0 });
     var monitor = new engine_1.GameObject("monitor", null, function (c) {
         c.colorCode("black");
-        c.fillText(JSON.stringify(memory(now)), 0, 50);
+        c.fillText(JSON.stringify([engine.getFps(), memory(now), engine.getFrameCount()]), 0, 50);
     });
     engine.addObjects([player, projectiles, monitor]);
     engine.addEvents([
