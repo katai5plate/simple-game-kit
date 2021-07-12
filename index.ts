@@ -11,16 +11,33 @@ const player = new GameObject(
   }
 );
 
-engine.addObjects([player]);
+const projectiles = new GameObject("projectiles");
+
+const memory = ({ total, used }) => {
+  const p = performance as any;
+  return {
+    total: p.memory.totalJSHeapSize - total,
+    used: p.memory.usedJSHeapSize - used,
+  };
+};
+const now = memory({ total: 0, used: 0 });
+
+const monitor = new GameObject("monitor", null, (c) => {
+  c.colorCode("black");
+  c.fillText(JSON.stringify(memory(now)), 0, 50);
+});
+
+engine.addObjects([player, projectiles, monitor]);
 
 engine.addEvents([
-  new GameEvent("shot", "click", (e: MouseEvent) => {
-    engine.addObjects([
+  new GameEvent("shot", "mousemove", (e: MouseEvent) => {
+    projectiles.addObjects([
       new GameObject(
-        "projectile" + Math.random(),
+        Math.random(),
         {
           position: player.position,
           velocity: XY.parse(player.position).to(engine.getMousePosition()),
+          destroyWhenOver: true,
         },
         (c, { position: { x, y } }) => {
           c.colorCode("red");
